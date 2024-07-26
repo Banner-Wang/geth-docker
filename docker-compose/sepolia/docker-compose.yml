@@ -10,7 +10,7 @@ services:
       - 8545:8545
       - 8546:8546
     volumes:
-      - ${GETH_DATADIR:-/root/.ethereum}:/root/.ethereum
+      - ${GETH_DATADIR:-/root/.ethereum/sepolia}:/root/.ethereum
     stop_signal: SIGINT
     stop_grace_period: 2m
     healthcheck:
@@ -43,8 +43,7 @@ services:
     restart: on-failure
     entrypoint: ["sh", "-c"]
     command:
-      - "if [ ! -f genesis.ssz ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/genesis.ssz'; fi"
-      - "if [ ! -f config.yaml ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/config.yaml'; fi"
+      - "if [ ! -f genesis.ssz ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/genesis.ssz'; fi && if [ ! -f config.yaml ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/config.yaml'; fi"
     working_dir: /genesis
     volumes:
       - ${PRYSM_DATADIR:-/root/.eth2}:/genesis
@@ -54,7 +53,7 @@ services:
     stop_grace_period: 2m
     volumes:
       - ${PRYSM_DATADIR:-/root/.eth2}:/data
-      - ${GETH_DATADIR:-/root/.ethereum}:/geth
+      - ${GETH_DATADIR:-/root/.ethereum/sepolia}:/geth
     depends_on:
       geth:
         condition: service_healthy

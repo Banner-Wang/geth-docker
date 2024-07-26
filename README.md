@@ -32,7 +32,7 @@ $ sudo mkdir -p $PRYSM_DATADIR
 **Start**
 
 ```
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 ## Kubernetes
