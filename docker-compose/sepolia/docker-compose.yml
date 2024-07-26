@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   geth:
-    image: ethereum/client-go:v1.13.15
+    image: ethereum/client-go:v1.14.7
     restart: unless-stopped
     ports:
       - 30303:30303
@@ -10,18 +10,19 @@ services:
       - 8545:8545
       - 8546:8546
     volumes:
-      - ${GETH_DATADIR:-/data/geth}:/data
+      - ${GETH_DATADIR:-/root/.ethereum}:/root/.ethereum
+    stop_signal: SIGINT
     stop_grace_period: 2m
     healthcheck:
-      test: ["CMD-SHELL", "geth attach --datadir /data --exec eth.blockNumber"]
+      test: ["CMD-SHELL", "geth attach --datadir /root/.ethereum --exec eth.blockNumber"]
       interval: 10s
       timeout: 5s
       retries: 5
     command:
       - --sepolia
-      - --datadir=/data
+      - --datadir=/root/.ethereum
       - --http
-      - --http.api=eth,net,web3
+      - --http.api=eth,net,engine,admin,web3
       - --http.addr=0.0.0.0
       - --http.vhosts=*
       - --http.corsdomain=*
@@ -42,17 +43,18 @@ services:
     restart: on-failure
     entrypoint: ["sh", "-c"]
     command:
-      - "if [ ! -f genesis.ssz ]; then wget 'https://github.com/eth-clients/merge-testnets/raw/main/sepolia/genesis.ssz'; fi"
+      - "if [ ! -f genesis.ssz ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/genesis.ssz'; fi"
+      - "if [ ! -f config.yaml ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/config.yaml'; fi"
     working_dir: /genesis
     volumes:
-      - ${PRYSM_DATADIR:-/data/prysm}:/genesis
+      - ${PRYSM_DATADIR:-/root/.eth2}:/genesis
   prysm:
-    image: gcr.io/prysmaticlabs/prysm/beacon-chain:v5.0.3
+    image: prysmaticlabs/prysm-beacon-chain:v5.0.4
     restart: unless-stopped
     stop_grace_period: 2m
     volumes:
-      - ${PRYSM_DATADIR:-/data/prysm}:/data
-      - ${GETH_DATADIR:-/data/geth}:/geth
+      - ${PRYSM_DATADIR:-/root/.eth2}:/data
+      - ${GETH_DATADIR:-/root/.ethereum}:/geth
     depends_on:
       geth:
         condition: service_healthy
@@ -60,12 +62,12 @@ services:
         condition: service_completed_successfully
     command:
       - --accept-terms-of-use
-      - --sepolia
       - --datadir=/data
       - --execution-endpoint=/geth/geth.ipc
+      - --rpc-host=0.0.0.0
+      - --grpc-gateway-host=0.0.0.0
       - --genesis-state=/data/genesis.ssz
-      - --checkpoint-sync-url=https://sepolia.beaconstate.info
-      - --genesis-beacon-api-url=https://sepolia.beaconstate.info
+      - --chain-config-file=/data/config.yaml
     logging:
       driver: json-file
       options:
