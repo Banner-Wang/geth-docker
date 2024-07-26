@@ -59,6 +59,9 @@ services:
         condition: service_healthy
       genesis:
         condition: service_completed_successfully
+    ports:
+      - 4000:4000
+      - 3500:3500
     command:
       - --accept-terms-of-use
       - --datadir=/data
