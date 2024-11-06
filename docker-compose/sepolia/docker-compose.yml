@@ -67,7 +67,9 @@ services:
       - --datadir=/data
       - --execution-endpoint=/geth/geth.ipc
       - --rpc-host=0.0.0.0
+      - --rpc-port=4000
       - --grpc-gateway-host=0.0.0.0
+      - --grpc-gateway-port=3500
       - --genesis-state=/data/genesis.ssz
       - --chain-config-file=/data/config.yaml
     logging:
