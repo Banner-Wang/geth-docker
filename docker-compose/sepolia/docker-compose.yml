@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   geth:
-    image: ethereum/client-go:v1.14.7
+    image: ethereum/client-go:v1.15.11
     restart: unless-stopped
     ports:
       - 30303:30303
@@ -10,7 +10,7 @@ services:
       - 8545:8545
       - 8546:8546
     volumes:
-      - ${GETH_DATADIR:-/root/.ethereum/sepolia}:/root/.ethereum
+      - ${GETH_DATADIR:-/data/.ethereum/sepolia}:/root/.ethereum
     stop_signal: SIGINT
     stop_grace_period: 2m
     healthcheck:
@@ -46,14 +46,14 @@ services:
       - "if [ ! -f genesis.ssz ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/genesis.ssz'; fi && if [ ! -f config.yaml ]; then wget 'https://raw.githubusercontent.com/eth-clients/sepolia/main/metadata/config.yaml'; fi"
     working_dir: /genesis
     volumes:
-      - ${PRYSM_DATADIR:-/root/.eth2}:/genesis
+      - ${PRYSM_DATADIR:-/data/.eth2}:/genesis
   prysm:
-    image: prysmaticlabs/prysm-beacon-chain:v5.0.4
+    image: prysmaticlabs/prysm-beacon-chain:v6.0.1
     restart: unless-stopped
     stop_grace_period: 2m
     volumes:
-      - ${PRYSM_DATADIR:-/root/.eth2}:/data
-      - ${GETH_DATADIR:-/root/.ethereum/sepolia}:/geth
+      - ${PRYSM_DATADIR:-/data/.eth2}:/data
+      - ${GETH_DATADIR:-/data/.ethereum/sepolia}:/geth
     depends_on:
       geth:
         condition: service_healthy
@@ -71,7 +71,9 @@ services:
       - --grpc-gateway-host=0.0.0.0
       - --grpc-gateway-port=3500
       - --genesis-state=/data/genesis.ssz
-      - --chain-config-file=/data/config.yaml
+      - --sepolia
+      - --checkpoint-sync-url=https://sepolia.beaconstate.info
+      - --genesis-beacon-api-url=https://sepolia.beaconstate.info
     logging:
       driver: json-file
       options:
