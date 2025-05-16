@@ -7,7 +7,7 @@ services:
     ports:
       - 30303:30303
       - 30303:30303/udp
-      - 8545:8545
+      - 9005:8545
       - 8546:8546
     volumes:
       - ${GETH_DATADIR:-/data/.ethereum/sepolia}:/root/.ethereum
@@ -61,7 +61,7 @@ services:
         condition: service_completed_successfully
     ports:
       - 4000:4000
-      - 3500:3500
+      - 9006:3500
     command:
       - --accept-terms-of-use
       - --datadir=/data
